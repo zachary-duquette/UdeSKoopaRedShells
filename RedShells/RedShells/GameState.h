@@ -2,7 +2,7 @@
 
 class GameState
 {
-private:
+public:
 	struct Position
 	{
 		int mi_x;
@@ -13,52 +13,76 @@ private:
 		}
 	};
 
+	enum Direction
+	{
+		NORTH,
+		NORTH_EAST,
+		EAST,
+		SOUTH_EAST,
+		SOUTH,
+		SOUTH_WEST,
+		WEST,
+		NORTH_WEST,
+		NB_DIRECTIONS
+	};
+
 	struct LineHead
 	{
 		Position mi_position;
-		char mi_direction;
+		Direction mi_direction;
+		bool mi_alive;
 
-		LineHead(int x, int y, char direction)
-			: mi_position{ x, y }, mi_direction{ direction }
+		LineHead()
+			: mi_position{0,0}
+		{
+
+		}
+
+		LineHead(int x, int y, Direction direction)
+			: mi_position{ x, y }, mi_direction{ direction }, mi_alive{ true }
+		{
+		}
+		LineHead(Position position, Direction direction)
+			: mi_position{ position }, mi_direction{ direction }, mi_alive{ true }
 		{
 		}
 	};
 
+	enum FieldValue : char
+	{
+		EMPTY,
+		PLAYER_ONE,
+		PLAYER_TWO,
+		PLAYER_THREE,
+		PLAYER_FOUR,
+		WALL
+	};
+
 	static const int FIELD_SIZE = 50;
-	static const int DISTANCE_FROM_BORDER_START = 10;
 	//static const int FIELD_SIZE = 256;
+private:
+	static const int DISTANCE_FROM_BORDER_START = 10;
 	//static const int DISTANCE_FROM_BORDER_START = 50;
-
-	static const LineHead PLAYER_ONE_START; //Top Left
-	static const LineHead PLAYER_TWO_START; // Top Right
-	static const LineHead PLAYER_THREE_START; //Bottom Left
-	static const LineHead PLAYER_FOUR_START; //Bottom Right
-
-	static const char EMPTY = 0X00;
-	static const char PLAYER_ONE = 0x01;
-	static const char PLAYER_TWO = 0x02;
-	static const char PLAYER_THREE = 0x03;
-	static const char PLAYER_FOUR = 0x04;
-
-	static const char NORTH = 0x00;
-	static const char NORTH_EAST = 0x01;
-	static const char EAST = 0x02;
-	static const char SOUTH_EAST = 0x03;
-	static const char SOUTH = 0x04;
-	static const char SOUTH_WEST = 0x05;
-	static const char WEST = 0x06;
-	static const char NORTH_WEST = 0x07;
+	static const int DISTANCE_FROM_OTHER_PLAYER = 5;
 
 	char m_field[FIELD_SIZE][FIELD_SIZE];
 	std::vector<LineHead> m_players;
 
-	LineHead GetPlayerStartFromNumber(int number);
+	LineHead GetRandomStart();
+	bool ValidateStartLocation(LineHead newPlayer);
 
 public:
 	GameState();
+
+	//Returns Player Number
 	int AddPlayer();
 
-	void Reset();
+	int GetNumberPlayers();
+
+	LineHead GetLineHeadForPlayer(int playerNumber);
+	
+	// Return false if collision
+	bool MovePlayer(int playerNumber, Direction direction);
 
 	void PrintField();
 };
