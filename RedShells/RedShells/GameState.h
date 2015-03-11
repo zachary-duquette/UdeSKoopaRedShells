@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 
 class GameState
@@ -70,9 +71,11 @@ private:
 
 	LineHead GetRandomStart();
 	bool ValidateStartLocation(LineHead newPlayer);
+	void FillAround(int playerNumber, Position position);
 
 public:
 	GameState();
+	~GameState();
 
 	//Returns Player Number
 	int AddPlayer();

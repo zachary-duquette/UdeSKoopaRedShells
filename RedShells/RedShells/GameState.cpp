@@ -1,6 +1,7 @@
 #include "GameState.h"
 #include <iostream>
 #include <random>
+#include <iomanip>
 
 using namespace std;
 
@@ -45,6 +46,10 @@ GameState::GameState()
 	}
 }
 
+GameState::~GameState()
+{
+}
+
 //Private Methods -----
 GameState::LineHead GameState::GetRandomStart()
 {
@@ -74,9 +79,9 @@ bool GameState::ValidateStartLocation(GameState::LineHead newPlayer)
 	auto maxX = newPlayer.mi_position.mi_x + DISTANCE_FROM_OTHER_PLAYER;
 	auto maxY = newPlayer.mi_position.mi_y + DISTANCE_FROM_OTHER_PLAYER;
 
-	for (int y = minY; y < maxY; ++y)
+	for (int y = minY; y <= maxY; ++y)
 	{
-		for (int x = minX; x < maxX; ++x)
+		for (int x = minX; x <= maxX; ++x)
 		{
 			if (m_field[y][x] != EMPTY)
 			{
@@ -110,17 +115,17 @@ GameState::LineHead GameState::GetLineHeadForPlayer(int playerNumber)
 void GameState::PrintField()
 {
 	cout << "Amount of players : " << m_players.size() << endl;
-	cout << "-----------------------------------------" << endl;
-	for (int y = 0; y < FIELD_SIZE; ++y)
+	cout << "----01234567890123456789012345678901234567890123456789----------" << endl;
+	for (int y = FIELD_SIZE-1; y >= 0; --y)
 	{
-		cout << "|";
+		cout << std::setw(2) << std::setfill('0') << y << " |";
 		for (int x = 0; x < FIELD_SIZE; ++x)
 		{
 			cout << hex(m_field[y][x]);
 		}
 		cout << "|" << endl;
 	}
-	cout << "-----------------------------------------" << endl;
+	cout << "----01234567890123456789012345678901234567890123456789----------" << endl;
 }
 
 bool GameState::MovePlayer(int playerNumber, GameState::Direction direction)
@@ -133,11 +138,12 @@ bool GameState::MovePlayer(int playerNumber, GameState::Direction direction)
 	{
 	case NORTH:
 		newX = oldX;
-		newY = oldY - 1;
+		newY = oldY + 1;
+
 		break;
 	case NORTH_EAST:
 		newX = oldX + 1;
-		newY = oldY - 1;
+		newY = oldY + 1;
 		break;
 	case EAST:
 		newX = oldX + 1;
@@ -145,15 +151,15 @@ bool GameState::MovePlayer(int playerNumber, GameState::Direction direction)
 		break;
 	case SOUTH_EAST:
 		newX = oldX + 1;
-		newY = oldY + 1;
+		newY = oldY - 1;
 		break;
 	case SOUTH:
 		newX = oldX;
-		newY = oldY + 1;
+		newY = oldY - 1;
 		break;
 	case SOUTH_WEST:
 		newX = oldX - 1;
-		newY = oldY + 1;
+		newY = oldY - 1;
 		break;
 	case WEST:
 		newX = oldX - 1;
@@ -161,7 +167,7 @@ bool GameState::MovePlayer(int playerNumber, GameState::Direction direction)
 		break;
 	case NORTH_WEST:
 		newX = oldX - 1;
-		newY = oldY - 1;
+		newY = oldY + 1;
 		break;
 	default:
 		newX = oldX;
@@ -176,9 +182,9 @@ bool GameState::MovePlayer(int playerNumber, GameState::Direction direction)
 	}
 	else
 	{
-		m_players[playerNumber-1].mi_position.mi_x = newX;
-		m_players[playerNumber-1].mi_position.mi_y = newY;
-		m_players[playerNumber-1].mi_direction = direction;
+		m_players[playerNumber - 1].mi_position.mi_x = newX;
+		m_players[playerNumber - 1].mi_position.mi_y = newY;
+		m_players[playerNumber - 1].mi_direction = direction;
 		m_field[newY][newX] = static_cast<FieldValue>(playerNumber);
 		return true;
 	}
