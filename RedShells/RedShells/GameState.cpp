@@ -98,7 +98,12 @@ bool GameState::DoesIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coord
 int GameState::AddPlayer()
 {
 	PlayerLine playerLine;
-	playerLine.emplace_back(GetRandomStartCoordinate());
+	Coordinate firstCoord = GetRandomStartCoordinate();
+	Coordinate secondCoord = CalculateNewCoordinate(firstCoord, GetRandomStartDirection());
+
+	playerLine.push_back(firstCoord);
+	playerLine.push_back(secondCoord);
+
 	m_players.push_back(playerLine);
 	return m_players.size();
 }
@@ -108,9 +113,13 @@ int GameState::GetNumberPlayers() const
 	return m_players.size();
 }
 
-GameState::Coordinate GameState::GetLineHeadForPlayer(int playerNumber) const
+double GameState::GetLastDirectionForPlayer(int playerNumber) const
 {
-	return m_players[playerNumber-1].back();
+	auto size = m_players[playerNumber - 1].size();
+	double x = m_players[playerNumber - 1][size-1].mi_x - m_players[playerNumber - 1][size - 2].mi_x;
+	double y = m_players[playerNumber - 1][size-1].mi_y - m_players[playerNumber - 1][size - 2].mi_y;
+
+	return atan(x / y) * 180 / 3.14159265;
 }
 
 void GameState::Print() const
@@ -142,7 +151,8 @@ bool GameState::MovePlayer(int playerNumber, double angle)
 			{
 				if (DoesIntersect(m_players[playerNumber - 1].back(), newCoordinate, *coordIT, *(coordIT + 1)))
 				{
-					if (!(*(coordIT + 1) == m_players[playerNumber - 1].back() && playerNumber == currentPlayer))
+					//Verify that the intersection is not newHead with oldHead
+					if (!(*(coordIT + 1) == m_players[playerNumber - 1].back() && (playerNumber - 1) == currentPlayer))
 					{
 						return false;
 					}
