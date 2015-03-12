@@ -97,7 +97,7 @@ bool GameState::DoesIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coord
 
 int GameState::AddPlayer()
 {
-	Player playerLine;
+	PlayerLine playerLine;
 	playerLine.emplace_back(GetRandomStartCoordinate());
 	m_players.push_back(playerLine);
 	return m_players.size();
@@ -136,13 +136,13 @@ bool GameState::MovePlayer(int playerNumber, double angle)
 	}
 	else
 	{
-		for (auto playerIT = m_players.begin(); playerIT != m_players.end(); ++playerIT)
+		for (size_t currentPlayer = 0; currentPlayer < m_players.size(); ++currentPlayer)
 		{
-			for (auto coordIT = playerIT->begin(); (coordIT + 1) != playerIT->end(); ++coordIT)
+			for (auto coordIT = m_players[currentPlayer].begin(); (coordIT + 1) != m_players[currentPlayer].end(); ++coordIT)
 			{
 				if (DoesIntersect(m_players[playerNumber - 1].back(), newCoordinate, *coordIT, *(coordIT + 1)))
 				{
-					if ((coordIT + 1) != (m_players[playerNumber - 1].end() - 1))
+					if (!(*(coordIT + 1) == m_players[playerNumber - 1].back() && playerNumber == currentPlayer))
 					{
 						return false;
 					}
@@ -155,7 +155,7 @@ bool GameState::MovePlayer(int playerNumber, double angle)
 	return true;
 }
 
-vector<GameState::Player> GameState::getLines() const
+vector<GameState::PlayerLine> GameState::getLines() const
 {
 	return m_players;
 }
