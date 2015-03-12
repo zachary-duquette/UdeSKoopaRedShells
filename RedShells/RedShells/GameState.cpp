@@ -1,49 +1,18 @@
 #include "GameState.h"
 #include <iostream>
 #include <random>
-#include <iomanip>
+#include <cmath>
 
 using namespace std;
 
-// Simplified char to hex printer
-// http://stackoverflow.com/questions/673240/how-do-i-print-an-unsigned-char-as-hex-in-c-using-ostream
-struct HexCharStruct
-{
-	unsigned char c;
-	HexCharStruct(unsigned char _c) : c(_c) { }
-};
-
-inline std::ostream& operator<<(std::ostream& o, const HexCharStruct& hs)
-{
-	return (o << std::hex << static_cast<int>(hs.c));
-}
-
-inline HexCharStruct hex(unsigned char _c)
-{
-	return HexCharStruct(_c);
-}
+const double GameState::SPEED = 0.5;
+const int GameState::DISTANCE_FROM_OTHER_PLAYER = 5;
+const int GameState::DISTANCE_FROM_BORDER_START = 10;
+const int GameState::FIELD_SIZE = 50;
 
 GameState::GameState()
 {
-	//Set everything as empty
-	for (int y = 0; y < FIELD_SIZE; ++y)
-	{
-		for (int x = 0; x < FIELD_SIZE; ++x)
-		{
-			m_field[y][x] = EMPTY;
-		}
-	}
-	//Add external walls
-	for (int x = 0; x < FIELD_SIZE; ++x)
-	{
-		m_field[0][x] = WALL;
-		m_field[FIELD_SIZE-1][x] = WALL;
-	}
-	for (int y = 0; y < FIELD_SIZE; ++y)
-	{
-		m_field[y][0] = WALL;
-		m_field[y][FIELD_SIZE-1] = WALL;
-	}
+	
 }
 
 GameState::~GameState()
@@ -51,141 +20,142 @@ GameState::~GameState()
 }
 
 //Private Methods -----
-GameState::LineHead GameState::GetRandomStart()
+GameState::Coordinate GameState::GetRandomStartCoordinate() const
 {
 	random_device rd;
 	mt19937 prng{ rd() };
 	uniform_int_distribution<int> randomPosition{ DISTANCE_FROM_BORDER_START, FIELD_SIZE - DISTANCE_FROM_BORDER_START };
-	uniform_int_distribution<int> randomDirection{ 0, NB_DIRECTIONS - 1 };
 
 	bool validStartLocation = false;
-	LineHead startingLineHead{};
+	Coordinate startingLineHead{};
 	while (!validStartLocation)
 	{
-		startingLineHead.mi_position.mi_x = randomPosition(prng);
-		startingLineHead.mi_position.mi_y = randomPosition(prng);
-		startingLineHead.mi_direction = static_cast<Direction>(randomDirection(prng));
-		validStartLocation = ValidateStartLocation(startingLineHead);
+		startingLineHead.mi_x = static_cast<double>(randomPosition(prng));
+		startingLineHead.mi_y = static_cast<double>(randomPosition(prng));
+		validStartLocation = IsFarFromOtherPlayers(startingLineHead);
 	}
 
 	return startingLineHead;
 }
 
-bool GameState::ValidateStartLocation(GameState::LineHead newPlayer)
+int GameState::GetRandomStartDirection() const
 {
-	//Assumes that DISTANCE_FROM_OTHER_PLAYER < DISTANCE_FROM_BORDER_START
-	auto minX = newPlayer.mi_position.mi_x - DISTANCE_FROM_OTHER_PLAYER;
-	auto minY = newPlayer.mi_position.mi_y - DISTANCE_FROM_OTHER_PLAYER;
-	auto maxX = newPlayer.mi_position.mi_x + DISTANCE_FROM_OTHER_PLAYER;
-	auto maxY = newPlayer.mi_position.mi_y + DISTANCE_FROM_OTHER_PLAYER;
+	random_device rd;
+	mt19937 prng{ rd() };
+	uniform_int_distribution<int> randomDirection{ 0, 360 };
+	return randomDirection(prng);
+}
 
-	for (int y = minY; y <= maxY; ++y)
+bool GameState::IsFarFromOtherPlayers(GameState::Coordinate newPlayerStart) const
+{
+	for (auto it = m_players.begin(); it != m_players.end(); ++it)
 	{
-		for (int x = minX; x <= maxX; ++x)
+		if (abs(CalculateDistance(newPlayerStart, it->front())) < DISTANCE_FROM_OTHER_PLAYER)
 		{
-			if (m_field[y][x] != EMPTY)
-			{
-				return false;
-			}
+			return false;
 		}
 	}
 	return true;
+}
+
+double GameState::CalculateDistance(Coordinate p1, Coordinate p2) const
+{
+	return sqrt((p2.mi_x - p1.mi_x)*(p2.mi_x - p1.mi_x) + (p2.mi_y - p1.mi_y)*(p2.mi_y - p1.mi_y));
+}
+
+GameState::Coordinate GameState::CalculateNewCoordinate(Coordinate coord, double angle) const
+{
+	double newX = cos(angle * 3.14159265 / 180) * SPEED;
+	double newY = sin(angle * 3.14159265 / 180) * SPEED;
+	return Coordinate{ coord.mi_x + newX, coord.mi_y + newY };
+}
+
+bool GameState::IsOutOfBounds(Coordinate p) const
+{
+	return p.mi_x > FIELD_SIZE || p.mi_x < 0 || p.mi_y > FIELD_SIZE || p.mi_y < 0;
+}
+
+bool GameState::DoesIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) const
+{
+	double s1_x, s1_y, s2_x, s2_y;
+	s1_x = p2.mi_x - p1.mi_x;     s1_y = p2.mi_y - p1.mi_y;
+	s2_x = q2.mi_x - q1.mi_x;     s2_y = q2.mi_y - q1.mi_y;
+
+	double s, t;
+	s = (-s1_y * (p1.mi_x - q1.mi_x) + s1_x * (p1.mi_y - q1.mi_y)) / (-s2_x * s1_y + s1_x * s2_y);
+	t = (s2_x * (p1.mi_y - q1.mi_y) - s2_y * (p1.mi_x - q1.mi_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+	if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+	{
+		return true; // Intersection
+	}
+
+	return false; // No intersection
 }
 
 //Public Methods -----
 
 int GameState::AddPlayer()
 {
-	GameState::LineHead newPlayer = GetRandomStart();
-	m_players.push_back(newPlayer);
-	m_field[newPlayer.mi_position.mi_y][newPlayer.mi_position.mi_x] = static_cast<FieldValue>(m_players.size());
+	Player playerLine;
+	playerLine.emplace_back(GetRandomStartCoordinate());
+	m_players.push_back(playerLine);
 	return m_players.size();
 }
 
-int GameState::GetNumberPlayers()
+int GameState::GetNumberPlayers() const
 {
 	return m_players.size();
 }
 
-GameState::LineHead GameState::GetLineHeadForPlayer(int playerNumber)
+GameState::Coordinate GameState::GetLineHeadForPlayer(int playerNumber) const
 {
-	return m_players[playerNumber-1];
+	return m_players[playerNumber-1].back();
 }
 
-void GameState::PrintField()
+void GameState::Print() const
 {
-	cout << "Amount of players : " << m_players.size() << endl;
-	cout << "----01234567890123456789012345678901234567890123456789----------" << endl;
-	for (int y = FIELD_SIZE-1; y >= 0; --y)
+	for (unsigned int i = 0; i < m_players.size(); ++i)
 	{
-		cout << std::setw(2) << std::setfill('0') << y << " |";
-		for (int x = 0; x < FIELD_SIZE; ++x)
+		cout << "Player " << i + 1 << " coordinates : " << endl;
+		for (unsigned int j = 0; j < m_players[i].size(); ++j)
 		{
-			cout << hex(m_field[y][x]);
+			cout << "X : " << m_players[i][j].mi_x << " Y : " << m_players[i][j].mi_y << endl;
 		}
-		cout << "|" << endl;
 	}
-	cout << "----01234567890123456789012345678901234567890123456789----------" << endl;
 }
 
-bool GameState::MovePlayer(int playerNumber, GameState::Direction direction)
+bool GameState::MovePlayer(int playerNumber, double angle)
 {
-	auto oldX = m_players[playerNumber-1].mi_position.mi_x;
-	auto oldY = m_players[playerNumber-1].mi_position.mi_y;
-	auto newX = 0;
-	auto newY = 0;
-	switch (direction)
+	//Calculate new dot
+	auto newCoordinate = CalculateNewCoordinate(m_players[playerNumber - 1].back(), angle);
+	//Check if collisions
+	if (IsOutOfBounds(newCoordinate))
 	{
-	case NORTH:
-		newX = oldX;
-		newY = oldY + 1;
-
-		break;
-	case NORTH_EAST:
-		newX = oldX + 1;
-		newY = oldY + 1;
-		break;
-	case EAST:
-		newX = oldX + 1;
-		newY = oldY;
-		break;
-	case SOUTH_EAST:
-		newX = oldX + 1;
-		newY = oldY - 1;
-		break;
-	case SOUTH:
-		newX = oldX;
-		newY = oldY - 1;
-		break;
-	case SOUTH_WEST:
-		newX = oldX - 1;
-		newY = oldY - 1;
-		break;
-	case WEST:
-		newX = oldX - 1;
-		newY = oldY;
-		break;
-	case NORTH_WEST:
-		newX = oldX - 1;
-		newY = oldY + 1;
-		break;
-	default:
-		newX = oldX;
-		newY = oldY;
-		break;
-	}
-
-	if (m_field[newY][newX] != EMPTY)
-	{
-		m_players[playerNumber-1].mi_alive = false;
 		return false;
 	}
 	else
 	{
-		m_players[playerNumber - 1].mi_position.mi_x = newX;
-		m_players[playerNumber - 1].mi_position.mi_y = newY;
-		m_players[playerNumber - 1].mi_direction = direction;
-		m_field[newY][newX] = static_cast<FieldValue>(playerNumber);
-		return true;
+		for (auto playerIT = m_players.begin(); playerIT != m_players.end(); ++playerIT)
+		{
+			for (auto coordIT = playerIT->begin(); (coordIT + 1) != playerIT->end(); ++coordIT)
+			{
+				if (DoesIntersect(m_players[playerNumber - 1].back(), newCoordinate, *coordIT, *(coordIT + 1)))
+				{
+					if ((coordIT + 1) != (m_players[playerNumber - 1].end() - 1))
+					{
+						return false;
+					}
+				}
+			}
+		}
 	}
+	//Move head
+	m_players[playerNumber - 1].push_back(newCoordinate);
+	return true;
+}
+
+vector<GameState::Player> GameState::getLines() const
+{
+	return m_players;
 }

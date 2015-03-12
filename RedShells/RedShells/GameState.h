@@ -4,74 +4,44 @@
 class GameState
 {
 public:
-	struct Position
+	struct Coordinate
 	{
-		int mi_x;
-		int mi_y;
-		Position(int x, int y)
+		double mi_x;
+		double mi_y;
+		Coordinate()
+			:mi_x{}, mi_y{}
+		{
+		}
+		Coordinate(double x, double y)
 			:mi_x{ x }, mi_y{ y }
 		{
 		}
 	};
 
-	enum Direction
-	{
-		NORTH,
-		NORTH_EAST,
-		EAST,
-		SOUTH_EAST,
-		SOUTH,
-		SOUTH_WEST,
-		WEST,
-		NORTH_WEST,
-		NB_DIRECTIONS
-	};
+	typedef std::vector<Coordinate> Player;
 
-	struct LineHead
-	{
-		Position mi_position;
-		Direction mi_direction;
-		bool mi_alive;
+	static const int FIELD_SIZE;
 
-		LineHead()
-			: mi_position{0,0}
-		{
-
-		}
-
-		LineHead(int x, int y, Direction direction)
-			: mi_position{ x, y }, mi_direction{ direction }, mi_alive{ true }
-		{
-		}
-		LineHead(Position position, Direction direction)
-			: mi_position{ position }, mi_direction{ direction }, mi_alive{ true }
-		{
-		}
-	};
-
-	enum FieldValue : char
-	{
-		EMPTY,
-		PLAYER_ONE,
-		PLAYER_TWO,
-		PLAYER_THREE,
-		PLAYER_FOUR,
-		WALL
-	};
-
-	static const int FIELD_SIZE = 50;
-	//static const int FIELD_SIZE = 256;
 private:
-	static const int DISTANCE_FROM_BORDER_START = 10;
-	//static const int DISTANCE_FROM_BORDER_START = 50;
-	static const int DISTANCE_FROM_OTHER_PLAYER = 5;
+	static const int DISTANCE_FROM_BORDER_START;
+	static const int DISTANCE_FROM_OTHER_PLAYER;
+	static const double SPEED;
 
-	char m_field[FIELD_SIZE][FIELD_SIZE];
-	std::vector<LineHead> m_players;
+	std::vector<Player> m_players;
 
-	LineHead GetRandomStart();
-	bool ValidateStartLocation(LineHead newPlayer);
-	void FillAround(int playerNumber, Position position);
+	Coordinate GetRandomStartCoordinate() const;
+
+	int GetRandomStartDirection() const;
+
+	bool IsFarFromOtherPlayers(Coordinate newPlayer) const;
+
+	double CalculateDistance(Coordinate p1, Coordinate p2) const;
+
+	Coordinate CalculateNewCoordinate(Coordinate p, double angle) const;
+
+	bool IsOutOfBounds(Coordinate p) const;
+
+	bool DoesIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) const;
 
 public:
 	GameState();
@@ -80,12 +50,14 @@ public:
 	//Returns Player Number
 	int AddPlayer();
 
-	int GetNumberPlayers();
+	int GetNumberPlayers() const;
 
-	LineHead GetLineHeadForPlayer(int playerNumber);
+	Coordinate GetLineHeadForPlayer(int playerNumber) const;
 	
-	// Return false if collision
-	bool MovePlayer(int playerNumber, Direction direction);
+	// Angle is 0 to 360, 0 is X axis
+	bool MovePlayer(int playerNumber, double angle);
 
-	void PrintField();
+	void Print() const;
+
+	std::vector<Player> getLines() const;
 };

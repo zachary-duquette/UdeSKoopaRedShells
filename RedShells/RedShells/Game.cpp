@@ -21,5 +21,5 @@ void Game::Tick()
 
 bool Game::Finished()
 {
-
+	return false;
 }
