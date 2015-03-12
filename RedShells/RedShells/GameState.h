@@ -56,7 +56,7 @@ public:
 
 	int GetNumberPlayers() const;
 
-	Coordinate GetLineHeadForPlayer(int playerNumber) const;
+	double GetLastDirectionForPlayer(int playerNumber) const;
 	
 	// Angle is 0 to 360, 0 is X axis
 	bool MovePlayer(int playerNumber, double angle);
