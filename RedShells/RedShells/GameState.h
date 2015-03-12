@@ -18,7 +18,7 @@ public:
 		}
 	};
 
-	typedef std::vector<Coordinate> Player;
+	typedef std::vector<Coordinate> PlayerLine;
 
 	static const int FIELD_SIZE;
 
@@ -27,7 +27,7 @@ private:
 	static const int DISTANCE_FROM_OTHER_PLAYER;
 	static const double SPEED;
 
-	std::vector<Player> m_players;
+	std::vector<PlayerLine> m_players;
 
 	Coordinate GetRandomStartCoordinate() const;
 
@@ -59,5 +59,5 @@ public:
 
 	void Print() const;
 
-	std::vector<Player> getLines() const;
+	std::vector<PlayerLine> getLines() const;
 };
