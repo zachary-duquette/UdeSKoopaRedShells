@@ -1,10 +1,9 @@
-
 #include "Game.h"
 #include "GameState.h"
 #include <iostream>
 #include <chrono>
 #include <vector>
-
+#include <cmath>
 
 #include <windows.h>
 #include <gl\gl.h>
@@ -30,10 +29,9 @@ const vector<GLfloat> WHITE{ 1.0f, 1.0f, 1.0f };
 
 const vector<vector<GLfloat>> colors{ BLUE, RED, YELLOW, GREEN };
 
-GameState gameState{};
+Game game = Game{};
 
 int angle = 10;
-
 
 void DrawLine(vector<GameState::Coordinate> points, int player)
 {
@@ -90,10 +88,9 @@ void DrawWall()
 
 void DrawViewport()
 {
-	GameState::Coordinate old{ -1, -1 };
-	for (int i = 0; i < gameState.getLines().size(); ++i)
+	for (int i = 0; i < game.GetGameState().getLines().size(); ++i)
 	{
-		DrawLine(gameState.getLines()[i], i);
+		DrawLine(game.GetGameState().getLines()[i], i);
 	}
 }
 
@@ -113,7 +110,7 @@ void Draw()
 	glTranslatef(5.0f, 5.0f, 0.0f);
 
 	glPointSize(5.0);
-	glLineWidth(1);
+	glLineWidth(3);
 	DrawViewport();
 
 	glutSwapBuffers();
@@ -121,13 +118,7 @@ void Draw()
 
 void Update(int value)
 {
-	gameState.MovePlayer(1, angle);
-	gameState.MovePlayer(2, 90);
-	gameState.MovePlayer(3, 180);
-	gameState.MovePlayer(4, 270);
-
-	angle += 1;
-
+	game.Tick();
 	glutPostRedisplay();
 	glutTimerFunc(INTERVAL, Update, 0);
 }
@@ -139,8 +130,6 @@ void Enable2D(int width, int height) {
 	glOrtho(0.0f, width, 0.0f, height, 0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -164,10 +153,10 @@ int main()
 
 	auto begin = chrono::system_clock::now();
 
-	gameState.AddPlayer();
-	gameState.AddPlayer();
-	gameState.AddPlayer();
-	gameState.AddPlayer();
+	game.AddPlayer();
+	game.AddPlayer();
+	game.AddPlayer();
+	game.AddPlayer();
 
 	// Needed because our main dont have parms, cause the glutInit take the parms of the main 
 	//	Default parms when we have some, { appName = "appName" }
@@ -187,7 +176,6 @@ int main()
 	glColor3f(1.0f, 1.0f, 1.0f);
 
 	glutMainLoop();
-
 
 	auto end = chrono::system_clock::now();
 	cout << "Time spent : " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "ms" << endl;

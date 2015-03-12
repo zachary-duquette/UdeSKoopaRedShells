@@ -35,8 +35,6 @@ private:
 
 	Coordinate GetRandomStartCoordinate() const;
 
-	int GetRandomStartDirection() const;
-
 	bool IsFarFromOtherPlayers(Coordinate newPlayer) const;
 
 	double CalculateDistance(Coordinate p1, Coordinate p2) const;
@@ -53,13 +51,9 @@ public:
 
 	//Returns Player Number
 	int AddPlayer();
-
-	int GetNumberPlayers() const;
-
-	double GetLastDirectionForPlayer(int playerNumber) const;
 	
 	// Angle is 0 to 360, 0 is X axis
-	bool MovePlayer(int playerNumber, double angle);
+	bool MovePlayer(int playerNumber, double angle, bool angleChangedFromLastUpdate);
 
 	void Print() const;
 

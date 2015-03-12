@@ -5,10 +5,10 @@
 
 using namespace std;
 
-const double GameState::SPEED = 0.5;
+const double GameState::SPEED = 1;
 const int GameState::DISTANCE_FROM_OTHER_PLAYER = 5;
 const int GameState::DISTANCE_FROM_BORDER_START = 10;
-const int GameState::FIELD_SIZE = 50;
+const int GameState::FIELD_SIZE = 250;
 
 GameState::GameState()
 {
@@ -36,14 +36,6 @@ GameState::Coordinate GameState::GetRandomStartCoordinate() const
 	}
 
 	return startingLineHead;
-}
-
-int GameState::GetRandomStartDirection() const
-{
-	random_device rd;
-	mt19937 prng{ rd() };
-	uniform_int_distribution<int> randomDirection{ 0, 360 };
-	return randomDirection(prng);
 }
 
 bool GameState::IsFarFromOtherPlayers(GameState::Coordinate newPlayerStart) const
@@ -98,28 +90,10 @@ bool GameState::DoesIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coord
 int GameState::AddPlayer()
 {
 	PlayerLine playerLine;
-	Coordinate firstCoord = GetRandomStartCoordinate();
-	Coordinate secondCoord = CalculateNewCoordinate(firstCoord, GetRandomStartDirection());
-
-	playerLine.push_back(firstCoord);
-	playerLine.push_back(secondCoord);
+	playerLine.push_back(GetRandomStartCoordinate());
 
 	m_players.push_back(playerLine);
 	return m_players.size();
-}
-
-int GameState::GetNumberPlayers() const
-{
-	return m_players.size();
-}
-
-double GameState::GetLastDirectionForPlayer(int playerNumber) const
-{
-	auto size = m_players[playerNumber - 1].size();
-	double x = m_players[playerNumber - 1][size-1].mi_x - m_players[playerNumber - 1][size - 2].mi_x;
-	double y = m_players[playerNumber - 1][size-1].mi_y - m_players[playerNumber - 1][size - 2].mi_y;
-
-	return atan(x / y) * 180 / 3.14159265;
 }
 
 void GameState::Print() const
@@ -134,7 +108,7 @@ void GameState::Print() const
 	}
 }
 
-bool GameState::MovePlayer(int playerNumber, double angle)
+bool GameState::MovePlayer(int playerNumber, double angle, bool angleChangedFromLastUpdate)
 {
 	//Calculate new dot
 	auto newCoordinate = CalculateNewCoordinate(m_players[playerNumber - 1].back(), angle);
@@ -161,6 +135,10 @@ bool GameState::MovePlayer(int playerNumber, double angle)
 		}
 	}
 	//Move head
+	if (!angleChangedFromLastUpdate)
+	{
+		m_players[playerNumber - 1].pop_back();	
+	}
 	m_players[playerNumber - 1].push_back(newCoordinate);
 	return true;
 }
