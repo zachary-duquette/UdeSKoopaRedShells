@@ -55,6 +55,8 @@ public:
 	// Angle is 0 to 360, 0 is X axis
 	bool MovePlayer(int playerNumber, double angle, bool angleChangedFromLastUpdate);
 
+	void Reset();
+
 	void Print() const;
 
 	std::vector<PlayerLine> getLines() const;

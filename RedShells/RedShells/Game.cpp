@@ -1,10 +1,23 @@
 #include "Game.h"
 #include <random>
-//#include "IPlayerController.h"
+#include "IPlayerController.h"
 
 using namespace std;
 
-const int Game::MINIMUM_VARIATION_DEGREE = 2;
+Game* Game::m_singleton = nullptr;
+const int Game::MINIMUM_VARIATION_DEGREE = 1;
+
+Game::Game()
+{
+
+}
+
+Game* Game::GetGame()
+{
+	if (!m_singleton)
+		m_singleton = new Game();
+	return m_singleton;
+}
 
 int Game::GetRandomStartDirection() const
 {
@@ -21,7 +34,15 @@ GameState& Game::GetGameState()
 
 void Game::StartGame()
 {
-
+	m_canPlayersJoin = false;
+	m_gameState.Reset();
+	for (auto playerIT = m_players.begin(); playerIT != m_players.end(); ++playerIT)
+	{
+		playerIT->mi_playerNumber = m_gameState.AddPlayer();
+		playerIT->mi_angle = static_cast<float>(GetRandomStartDirection());
+		playerIT->mi_isAlive = true;
+		m_gameState.MovePlayer(playerIT->mi_playerNumber, playerIT->mi_angle, true);
+	}
 }
 
 void Game::Tick()
@@ -31,7 +52,7 @@ void Game::Tick()
 		if (playerIT->mi_isAlive)
 		{
 			//Get angle value from interface
-			auto newAngle = playerIT->mi_angle + 1;
+			double newAngle = playerIT->mi_angle + (10 * playerIT->mi_playerController->getValue());
 			bool angleChanged = abs(newAngle - playerIT->mi_angle) > MINIMUM_VARIATION_DEGREE;
 			if (angleChanged)
 			{
@@ -42,29 +63,36 @@ void Game::Tick()
 	}
 }
 
-bool Game::Finished()
+bool Game::IsGameFinished() const
 {
 	int playersDead = 0;
-	for (auto playerIT = m_players.begin(); playerIT != m_players.end(); ++playerIT)
+	for (auto player : m_players)
 	{
-		if (!playerIT->mi_isAlive)
+		if (!player.mi_isAlive)
 		{
 			++playersDead;
 		}
 	}
-	return m_players.size() == playersDead + 1;
+	return (playersDead + 1) >= m_players.size();
 }
 
-int Game::GetNumberOfPlayers()
+int Game::GetNumberOfPlayers() const
 {
 	return m_players.size();
 }
 
-void Game::AddPlayer()
+void Game::AddPlayer(IPlayerController* playerController)
 {
 	Player newPlayer{};
 	newPlayer.mi_playerNumber = m_gameState.AddPlayer();
 	newPlayer.mi_angle = static_cast<float>(GetRandomStartDirection());
 	newPlayer.mi_isAlive = true;
+	newPlayer.mi_playerController = playerController;
 	m_players.push_back(newPlayer);
+	m_gameState.MovePlayer(newPlayer.mi_playerNumber, newPlayer.mi_angle, true);
+}
+
+bool Game::CanPlayersJoin() const
+{
+	return m_canPlayersJoin;
 }

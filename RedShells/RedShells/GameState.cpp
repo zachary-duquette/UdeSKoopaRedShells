@@ -110,7 +110,7 @@ void GameState::Print() const
 
 bool GameState::MovePlayer(int playerNumber, double angle, bool angleChangedFromLastUpdate)
 {
-	//Calculate new dot
+	//Calculate new coordinate
 	auto newCoordinate = CalculateNewCoordinate(m_players[playerNumber - 1].back(), angle);
 	//Check if collisions
 	if (IsOutOfBounds(newCoordinate))
@@ -141,6 +141,11 @@ bool GameState::MovePlayer(int playerNumber, double angle, bool angleChangedFrom
 	}
 	m_players[playerNumber - 1].push_back(newCoordinate);
 	return true;
+}
+
+void GameState::Reset()
+{
+	m_players.clear();
 }
 
 vector<GameState::PlayerLine> GameState::getLines() const

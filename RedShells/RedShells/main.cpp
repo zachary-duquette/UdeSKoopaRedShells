@@ -4,11 +4,13 @@
 #include <chrono>
 #include <vector>
 #include <cmath>
+#include <thread>
 
 #include <windows.h>
 #include <gl\gl.h>
 #include <gl\glu.h>
 #include "GL/freeglut.h"
+#include "KeyboardController.h"
 
 using namespace std;
 
@@ -27,11 +29,11 @@ const vector<GLfloat> TURQUOISE{ 0.0f, 1.0f, 1.0f };
 
 const vector<GLfloat> WHITE{ 1.0f, 1.0f, 1.0f };
 
-const vector<vector<GLfloat>> colors{ BLUE, RED, YELLOW, GREEN };
-
-Game game = Game{};
+const vector<vector<GLfloat>> colors{ BLUE, RED, YELLOW, GREEN, VIOLET, TURQUOISE };
 
 int angle = 10;
+
+KeyboardController keyboardController{ 1 };
 
 void DrawLine(vector<GameState::Coordinate> points, int player)
 {
@@ -39,27 +41,26 @@ void DrawLine(vector<GameState::Coordinate> points, int player)
 	{
 		glColor3f(colors[player][0], colors[player][1], colors[player][2]);
 
-		int x, y, x_pred, y_pred;
+		double x, y;
 
-		x = points[0].mi_x * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
-		y = points[0].mi_y * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
+		x = points[0].mi_x * (BOARD_INITIAL_SIZE / GameState::FIELD_SIZE);
+		y = points[0].mi_y * (BOARD_INITIAL_SIZE / GameState::FIELD_SIZE);
 
-		int i;
 		glBegin(GL_LINE_STRIP);
-		for (i = 1; i < points.size(); ++i)
+		for (size_t i = 1; i < points.size(); ++i)
 		{
 			x = points[i].mi_x * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
 			y = points[i].mi_y * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
-			x_pred = points[i - 1].mi_x * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
-			y_pred = points[i - 1].mi_y * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
+			double x_pred = points[i - 1].mi_x * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
+			double y_pred = points[i - 1].mi_y * static_cast<float>(BOARD_INITIAL_SIZE / static_cast<float>(GameState::FIELD_SIZE));
 			
-			glVertex2i(x_pred, y_pred);
-			glVertex2i(x, y);
+			glVertex2d(x_pred, y_pred);
+			glVertex2d(x, y);
 		}
 		glEnd();
 
 		glBegin(GL_POINTS);
-		glVertex2i(x, y);
+		glVertex2d(x, y);
 		glEnd();
 	}
 }
@@ -68,8 +69,8 @@ void DrawWall()
 {
 	glColor3f(WHITE[0], WHITE[1], WHITE[2]);
 
-	GLfloat width = glutGet(GLUT_WINDOW_WIDTH) - 10;
-	GLfloat height = glutGet(GLUT_WINDOW_HEIGHT) - 10;
+	GLfloat width = static_cast<GLfloat>(glutGet(GLUT_WINDOW_WIDTH) - 10);
+	GLfloat height = static_cast<GLfloat>(glutGet(GLUT_WINDOW_HEIGHT) - 10);
 
 	GLfloat gameRes = min(width, height);
 
@@ -88,9 +89,10 @@ void DrawWall()
 
 void DrawViewport()
 {
-	for (int i = 0; i < game.GetGameState().getLines().size(); ++i)
+	Game* game = Game::GetGame();
+	for (size_t i = 0; i < game->GetGameState().getLines().size(); ++i)
 	{
-		DrawLine(game.GetGameState().getLines()[i], i);
+		DrawLine(game->GetGameState().getLines()[i], i);
 	}
 }
 
@@ -109,18 +111,11 @@ void Draw()
 
 	glTranslatef(5.0f, 5.0f, 0.0f);
 
-	glPointSize(5.0);
-	glLineWidth(3);
+	glPointSize(8.0);
+	glLineWidth(5);
 	DrawViewport();
 
 	glutSwapBuffers();
-}
-
-void Update(int value)
-{
-	game.Tick();
-	glutPostRedisplay();
-	glutTimerFunc(INTERVAL, Update, 0);
 }
 
 void Enable2D(int width, int height) {
@@ -136,28 +131,64 @@ void Enable2D(int width, int height) {
 	glEnable(GL_POINT_SMOOTH);
 }
 
+void WaitForPlayers(int value);
+void WaitOnStart(int value);
+
+void Tick(int value)
+{
+	Game* game = Game::GetGame();
+	if (!game->IsGameFinished())
+	{
+		auto begin = chrono::system_clock::now();
+		game->Tick();
+		glutPostRedisplay();
+		auto end = chrono::system_clock::now();
+		glutTimerFunc((chrono::milliseconds{ INTERVAL } -chrono::duration_cast<chrono::milliseconds>(end - begin)).count(), Tick, 0);
+	}
+	else
+	{
+		glutTimerFunc(5000, WaitForPlayers, 0);
+	}
+}
+
+void WaitForPlayers(int value)
+{
+	Game::GetGame()->StartGame();
+	glutPostRedisplay();
+	glutTimerFunc(3000, WaitOnStart, 0);
+}
+
+void WaitOnStart(int value)
+{
+	glutTimerFunc(INTERVAL, Tick, 0);
+}
+
+void Keyboard(unsigned char key, int x, int y)
+{
+	
+	Game* game = Game::GetGame();
+	if (key == '1')
+	{
+		if (game->GetNumberOfPlayers() < 6)
+		{
+			game->AddPlayer(&keyboardController);
+		}
+		glutPostRedisplay();
+	}
+	else
+	{
+		keyboardController.KeyPressed(key);
+	}
+}
+
+void KeyboardUp(unsigned char key, int x, int y)
+{
+	keyboardController.KeyReleased(key);
+}
+
+
 int main()
 {
-	//Game game{};
-	//while (true)
-	//{
-	//	auto begin = chrono::system_clock::now();
-	//	game.Tick();
-	//	if (game.Finished())
-	//	{
-	//		break;
-	//	}
-	//	auto end = chrono::system_clock::now();
-	//	std::this_thread::sleep_for(chrono::milliseconds{ 33 } - chrono::duration_cast<chrono::milliseconds>(end - begin));
-	//}
-
-	auto begin = chrono::system_clock::now();
-
-	game.AddPlayer();
-	game.AddPlayer();
-	game.AddPlayer();
-	game.AddPlayer();
-
 	// Needed because our main dont have parms, cause the glutInit take the parms of the main 
 	//	Default parms when we have some, { appName = "appName" }
 	char *myargv[1];
@@ -170,13 +201,12 @@ int main()
 	glutCreateWindow("Curve Fever v3.0");
 
 	glutDisplayFunc(Draw);
-	glutTimerFunc(INTERVAL, Update, 0);
+	glutKeyboardFunc(Keyboard);
+	glutKeyboardUpFunc(KeyboardUp);
+	glutTimerFunc(5000, WaitForPlayers, 0);
 
 	Enable2D(WIDTH, HEIGHT);
 	glColor3f(1.0f, 1.0f, 1.0f);
 
 	glutMainLoop();
-
-	auto end = chrono::system_clock::now();
-	cout << "Time spent : " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << "ms" << endl;
 }
