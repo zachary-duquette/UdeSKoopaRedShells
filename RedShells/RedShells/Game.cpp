@@ -12,7 +12,7 @@ Game::Game()
 
 }
 
-Game* Game::GetGame()
+Game* Game::Get()
 {
 	if (!m_singleton)
 		m_singleton = new Game();

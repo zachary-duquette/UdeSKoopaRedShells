@@ -30,7 +30,7 @@ private:
 	int GetRandomStartDirection() const;
 
 public:
-	static Game* GetGame();
+	static Game* Get();
 
 	GameState& GetGameState();
 

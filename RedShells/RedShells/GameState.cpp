@@ -7,7 +7,7 @@ using namespace std;
 
 const double GameState::SPEED = 1;
 const int GameState::DISTANCE_FROM_OTHER_PLAYER = 5;
-const int GameState::DISTANCE_FROM_BORDER_START = 10;
+const int GameState::DISTANCE_FROM_BORDER_START = 15;
 const int GameState::FIELD_SIZE = 250;
 
 GameState::GameState()

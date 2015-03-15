@@ -1,16 +1,17 @@
 #include "Game.h"
 #include "GameState.h"
 #include <iostream>
-#include <chrono>
-#include <vector>
-#include <cmath>
-#include <thread>
 
 #include <windows.h>
 #include <gl\gl.h>
 #include <gl\glu.h>
 #include "GL/freeglut.h"
+#include <chrono>
+#include <vector>
+#include <cmath>
+#include <thread>
 #include "KeyboardController.h"
+#include "KeyboardControllerManager.h"
 
 using namespace std;
 
@@ -32,8 +33,6 @@ const vector<GLfloat> WHITE{ 1.0f, 1.0f, 1.0f };
 const vector<vector<GLfloat>> colors{ BLUE, RED, YELLOW, GREEN, VIOLET, TURQUOISE };
 
 int angle = 10;
-
-KeyboardController keyboardController{ 1 };
 
 void DrawLine(vector<GameState::Coordinate> points, int player)
 {
@@ -89,7 +88,7 @@ void DrawWall()
 
 void DrawViewport()
 {
-	Game* game = Game::GetGame();
+	Game* game = Game::Get();
 	for (size_t i = 0; i < game->GetGameState().getLines().size(); ++i)
 	{
 		DrawLine(game->GetGameState().getLines()[i], i);
@@ -136,7 +135,7 @@ void WaitOnStart(int value);
 
 void Tick(int value)
 {
-	Game* game = Game::GetGame();
+	Game* game = Game::Get();
 	if (!game->IsGameFinished())
 	{
 		auto begin = chrono::system_clock::now();
@@ -153,7 +152,7 @@ void Tick(int value)
 
 void WaitForPlayers(int value)
 {
-	Game::GetGame()->StartGame();
+	Game::Get()->StartGame();
 	glutPostRedisplay();
 	glutTimerFunc(3000, WaitOnStart, 0);
 }
@@ -165,25 +164,24 @@ void WaitOnStart(int value)
 
 void Keyboard(unsigned char key, int x, int y)
 {
-	
-	Game* game = Game::GetGame();
+	Game* game = Game::Get();
 	if (key == '1')
 	{
-		if (game->GetNumberOfPlayers() < 6)
+		if (game->GetNumberOfPlayers() < 4)
 		{
-			game->AddPlayer(&keyboardController);
+			game->AddPlayer(KeyboardControllerManager::Get()->GetController());
 		}
 		glutPostRedisplay();
 	}
 	else
 	{
-		keyboardController.KeyPressed(key);
+		KeyboardControllerManager::Get()->KeyPressed(key);
 	}
 }
 
 void KeyboardUp(unsigned char key, int x, int y)
 {
-	keyboardController.KeyReleased(key);
+	KeyboardControllerManager::Get()->KeyReleased(key);
 }
 
 
@@ -203,7 +201,7 @@ int main()
 	glutDisplayFunc(Draw);
 	glutKeyboardFunc(Keyboard);
 	glutKeyboardUpFunc(KeyboardUp);
-	glutTimerFunc(5000, WaitForPlayers, 0);
+	glutTimerFunc(5000, WaitOnStart, 0);
 
 	Enable2D(WIDTH, HEIGHT);
 	glColor3f(1.0f, 1.0f, 1.0f);
