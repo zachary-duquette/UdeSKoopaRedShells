@@ -88,23 +88,23 @@ void Viewport::DrawLine(vector<GameState::Coordinate> points, int player)
 
 void Viewport::DrawField()
 {
-	//glTranslatef(5.0f, 5.0f, 0.0f);
-	//m_pixelFieldSzie -= 10; // double because of padding left/right (up/down)
-	//
-	//Game* game = Game::Get();
-	//for (size_t i = 0; i < game->GetGameState().getLines().size(); ++i)
-	//{
-	//	DrawLine(game->GetGameState().getLines()[i], i);
-	//}
+	glTranslatef(5.0f, 5.0f, 0.0f);
+	m_pixelFieldSzie -= 10; // double because of padding left/right (up/down)
+	
+	Game* game = Game::Get();
+	for (size_t i = 0; i < game->GetGameState().getLines().size(); ++i)
+	{
+		DrawLine(game->GetGameState().getLines()[i], i);
+	}
 	
 }
 
 void Viewport::DrawInfo()
 {
-	glTranslatef(WIDTH, HEIGHT - 20, 0.0f);
-
-	glColor3f(WHITE[0], WHITE[1], WHITE[2]);
-	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, 65);
+	//glTranslatef(WIDTH, HEIGHT - 20, 0.0f);
+	//
+	//glColor3f(WHITE[0], WHITE[1], WHITE[2]);
+	//glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, 65);
 
 }
 
