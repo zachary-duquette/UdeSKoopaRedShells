@@ -43,6 +43,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ExecutablePath>C:\Koopa\RedShells\freeglut\bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ExecutablePath)</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ExecutablePath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -77,6 +79,7 @@
     <ClCompile Include="CellphoneController.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClInclude Include="CellphoneController.h" />
+    <ClCompile Include="Viewport.cpp" />
     <ClInclude Include="Game.h" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameState.cpp" />
@@ -86,6 +89,7 @@
     <ClInclude Include="GameServer.h" />
     <ClInclude Include="KeyboardController.h" />
     <ClInclude Include="KeyboardControllerManager.h" />
+    <ClInclude Include="Viewport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameState.h" />
