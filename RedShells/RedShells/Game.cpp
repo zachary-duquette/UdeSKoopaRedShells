@@ -76,12 +76,12 @@ bool Game::IsGameFinished() const
 	return (playersDead + 1) >= m_players.size();
 }
 
-int Game::GetNumberOfPlayers() const
+bool Game::IsGameFull() const
 {
-	return m_players.size();
+	return m_players.size() == MAX_NUM_PLAYERS;
 }
 
-void Game::AddPlayer(IPlayerController* playerController)
+int Game::AddPlayer(IPlayerController* playerController)
 {
 	Player newPlayer{};
 	newPlayer.mi_playerNumber = m_gameState.AddPlayer();
@@ -90,6 +90,7 @@ void Game::AddPlayer(IPlayerController* playerController)
 	newPlayer.mi_playerController = playerController;
 	m_players.push_back(newPlayer);
 	m_gameState.MovePlayer(newPlayer.mi_playerNumber, newPlayer.mi_angle, true);
+	return newPlayer.mi_playerNumber;
 }
 
 bool Game::CanPlayersJoin() const

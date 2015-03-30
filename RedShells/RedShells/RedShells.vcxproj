@@ -49,12 +49,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Koopa\RedShells\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Koopa\RedShells\freeglut\include;C:\Koopa\RedShells\boost_1_57_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>C:\Koopa\RedShells\freeglut\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Koopa\RedShells\freeglut\lib;C:\Koopa\RedShells\boost_1_57_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -74,12 +74,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CellphoneController.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClInclude Include="CellphoneController.h" />
     <ClInclude Include="Game.h" />
+    <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="KeyboardController.cpp" />
     <ClCompile Include="KeyboardControllerManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClInclude Include="GameServer.h" />
     <ClInclude Include="KeyboardController.h" />
     <ClInclude Include="KeyboardControllerManager.h" />
   </ItemGroup>

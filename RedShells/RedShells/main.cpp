@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "GameState.h"
+#include "GameServer.h"
 #include <iostream>
 
 #include <windows.h>
@@ -167,7 +168,7 @@ void Keyboard(unsigned char key, int x, int y)
 	Game* game = Game::Get();
 	if (key == '1')
 	{
-		if (game->GetNumberOfPlayers() < 4)
+		if (!game->IsGameFull())
 		{
 			game->AddPlayer(KeyboardControllerManager::Get()->GetController());
 		}
@@ -205,6 +206,6 @@ int main()
 
 	Enable2D(WIDTH, HEIGHT);
 	glColor3f(1.0f, 1.0f, 1.0f);
-
+	GameServer server{};
 	glutMainLoop();
 }

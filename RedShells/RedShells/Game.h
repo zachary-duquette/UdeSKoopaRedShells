@@ -3,7 +3,6 @@
 #include <vector>
 
 class IPlayerController;
-
 class Game
 {
 private:
@@ -14,6 +13,8 @@ private:
 		float mi_angle;
 		IPlayerController* mi_playerController;
 	};
+
+	enum{MAX_NUM_PLAYERS = 4};
 
 	static Game* m_singleton;
 
@@ -40,9 +41,9 @@ public:
 
 	bool IsGameFinished() const;
 
-	int GetNumberOfPlayers() const;
+	bool IsGameFull() const;
 
-	void AddPlayer(IPlayerController* playerController);
+	int AddPlayer(IPlayerController* playerController);
 
 	bool CanPlayersJoin() const;
 };
