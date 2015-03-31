@@ -28,12 +28,12 @@ void GameServer::Update()
 				{
 					char message[100]{};
 					m_inGameSockets[player].second.receive(boost::asio::buffer(&message, 100));
-					std::string id{ message, 3};
+					std::string id{ message, 1};
 					char* payload = message;
 					//std::string payload{ p + 3 };
-					if (id == "Avg")
+					if (id == "A") // Avg
 					{
-						float value = std::stof(payload + 3);
+						float value = std::stof(payload + 1);
 						m_inGameSockets[player].first.mi_playerController->UpdateValue(value);
 						//if (m_inGameSockets[socket].first.mi_playerController->GetStatus() == Dead)
 						//{
@@ -82,7 +82,7 @@ void GameServer::AcceptSocket(tcp::socket& socket)
 	{
 		auto controller = new CellphoneController;
 		int playerId = game->AddPlayer(controller);
-		std::string answerMessage = "Col" + std::to_string(playerId);
+		std::string answerMessage = "C" + std::to_string(playerId); // Col
 		std::copy(answerMessage.begin(), answerMessage.end(), answer);
 
 		socket.send(boost::asio::buffer(&answer, answerMessage.size()));
@@ -102,7 +102,7 @@ void GameServer::AcceptSocket(tcp::socket& socket)
 void GameServer::DenySocket(tcp::socket& socket)
 {
 	char answer[100]{};
-	std::string answerMessage{ "Den" };
+	std::string answerMessage{ "D" }; // Denied
 	std::copy(answerMessage.begin(), answerMessage.end(), answer);
 
 	socket.send(boost::asio::buffer(&answer, answerMessage.size()));
@@ -131,7 +131,7 @@ void GameServer::Listen()
 			//{
 			//	if (!Game::Get()->IsGameFull())
 			//	{
-					AcceptSocket(newSocket);
+			AcceptSocket(newSocket);
 //				}
 	//			else
 		//		{

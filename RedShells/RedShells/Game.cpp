@@ -52,7 +52,7 @@ void Game::Tick()
 		if (playerIT->mi_isAlive)
 		{
 			//Get angle value from interface
-			double newAngle = playerIT->mi_angle + (10 * playerIT->mi_playerController->getValue());
+			double newAngle = playerIT->mi_angle + (-10 * playerIT->mi_playerController->getValue());
 			bool angleChanged = abs(newAngle - playerIT->mi_angle) > MINIMUM_VARIATION_DEGREE;
 			if (angleChanged)
 			{
