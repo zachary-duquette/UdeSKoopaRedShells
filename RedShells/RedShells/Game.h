@@ -46,4 +46,6 @@ public:
 	int AddPlayer(IPlayerController* playerController);
 
 	bool CanPlayersJoin() const;
+
+	int GetNumberOfPlayers() const;
 };

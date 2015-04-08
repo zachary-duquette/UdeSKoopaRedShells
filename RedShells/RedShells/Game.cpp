@@ -97,3 +97,8 @@ bool Game::CanPlayersJoin() const
 {
 	return m_canPlayersJoin;
 }
+
+int Game::GetNumberOfPlayers() const
+{
+	return m_players.size();
+}
