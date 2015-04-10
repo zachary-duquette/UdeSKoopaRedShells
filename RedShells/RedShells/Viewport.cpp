@@ -56,6 +56,11 @@ void Viewport::Enable2D(int width, int height) {
 	glPointSize(8.0);
 }
 
+void Viewport::SetPlayerColor(int player)
+{
+	glColor3f(COLORS[player][0], COLORS[player][1], COLORS[player][2]);
+}
+
 void Viewport::DrawLine(vector<GameState::Coordinate> points, int player)
 {
 	if (!points.empty())
@@ -99,13 +104,29 @@ void Viewport::DrawField()
 	
 }
 
+void Viewport::WriteText(const char* text, int length)
+{
+	for (int i = 0; i < length; ++i)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
+	}
+}
+
 void Viewport::DrawInfo()
 {
-	//glTranslatef(WIDTH, HEIGHT - 20, 0.0f);
-	//
-	//glColor3f(WHITE[0], WHITE[1], WHITE[2]);
-	//glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, 65);
+	//glRasterPos2i(m_pixelFieldSzie + 10, HEIGHT - 34);
+	vector<string> playerList{ "Player 1", "Player 2", "Player 3", "Player 4" };
+	string textToWrite{};
 
+	for (int i = 0; i < Game::Get()->GetNumberOfPlayers(); ++i)
+	{
+		SetPlayerColor(i);
+
+		glRasterPos2i(m_pixelFieldSzie + 10, HEIGHT - (34 * (i + 1)));
+		textToWrite = playerList[i];
+
+		WriteText(textToWrite.data(), textToWrite.length());
+	}
 }
 
 void Viewport::DrawWall()

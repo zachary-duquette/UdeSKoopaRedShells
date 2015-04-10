@@ -20,6 +20,9 @@ private:
 	void DrawWall();
 	void DrawField();
 	void DrawInfo();
+	void WriteText(const char*, int);
+
+	void SetPlayerColor(int);
 
 public:
 	static Viewport* Get();
