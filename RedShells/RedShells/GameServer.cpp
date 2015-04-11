@@ -2,12 +2,22 @@
 #include "CellphoneController.h"
 #include "Game.h"
 
+GameServer* GameServer::m_singleton = nullptr;
+
 GameServer::GameServer()
 : m_socketListener{ &GameServer::Update, this }
 , m_newConnection{ &GameServer::Listen, this }
 , m_inGameSockets{}
-, m_inQueueSockets{}
 {
+}
+
+GameServer* GameServer::Get()
+{
+	if (!m_singleton)
+	{
+		m_singleton = new GameServer();
+	}
+	return m_singleton;
 }
 
 GameServer::~GameServer()
@@ -18,7 +28,7 @@ GameServer::~GameServer()
 
 void GameServer::Update()
 {
-	while (true)//!Game::Get()->IsGameFinished())
+	while (true)
 	{
 		for (int player = 0; player < m_inGameSockets.size(); ++player)
 		{
@@ -28,9 +38,11 @@ void GameServer::Update()
 				{
 					char message[100];
 					boost::asio::read(m_inGameSockets[player].second, boost::asio::buffer(&message, 100));
+
+					auto avant = std::chrono::system_clock::now();
 					std::string id{ message, 1 };
 					char* payload = message;
-					if (id == "A") // Avg
+					if (id == "A") // Average
 					{
 						float value = std::stof(payload + 1);
 						m_inGameSockets[player].first.mi_playerController->UpdateValue(value);
@@ -57,23 +69,48 @@ void GameServer::Update()
 						m_inGameSockets[player].second.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 						m_inGameSockets[player].second.close();
 					}
+					auto apres = std::chrono::system_clock::now();
+					auto diff = avant - apres;
 				}
 
 			}
 			catch (boost::system::error_code ec)
 			{
-				std::cerr << ec.message() << std::endl;
+				std::cerr << "Boost error : " << ec.message() << std::endl;
 				m_inGameSockets[player].first.mi_isAlive = false;
 				m_inGameSockets[player].second.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 				m_inGameSockets[player].second.close();
-				Update();
+				continue;
 			}
+			catch (boost::system::system_error se)
+			{
+				std::cerr << "System error : " << se.what() << std::endl;
+				m_inGameSockets[player].first.mi_isAlive = false;
+				m_inGameSockets[player].second.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+				m_inGameSockets[player].second.close();
+				continue;
+			}
+	/*		catch (const std::invalid_argument& ia)
+			{
+				std::cerr << "Invalid argument : " << ia.what() << std::endl;
+				continue;
+			}
+			catch (const std::out_of_range& oor) 
+			{
+				std::cerr << "Out of Range error : " << oor.what() << std::endl;
+				continue;
+			}
+			catch (std::exception& e)
+			{
+				std::cerr << "Exception : " << e.what() << std::endl;
+				continue;
+			}*/
 			catch (...)
 			{
 				m_inGameSockets[player].first.mi_isAlive = false;
 				m_inGameSockets[player].second.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 				m_inGameSockets[player].second.close();
-				Update();
+				continue;
 			}
 		}
 	}
@@ -84,25 +121,13 @@ void GameServer::AcceptSocket(tcp::socket& socket)
 	char answer[100]{};
 	Game* game = Game::Get();
 
-	if (true)// game->CanPlayersJoin())
-	{
-		auto controller = new CellphoneController;
-		int playerId = game->AddPlayer(controller);
-		std::string answerMessage = "C" + std::to_string(playerId); // Col
-		std::copy(answerMessage.begin(), answerMessage.end(), answer);
+	auto controller = new CellphoneController;
+	int playerId = game->AddPlayer(controller);
+	std::string answerMessage = "C" + std::to_string(playerId); // Color
+	std::copy(answerMessage.begin(), answerMessage.end(), answer);
 
-		socket.send(boost::asio::buffer(&answer, answerMessage.size()));
-		m_inGameSockets.emplace_back(std::make_pair(Player{ true, controller }, std::move(socket)));
-	}
-	else
-	{
-		std::string answerMessage{ "Wai" };
-		std::copy(answerMessage.begin(), answerMessage.end(), answer);
-
-		socket.send(boost::asio::buffer(&answer, answerMessage.size()));
-		m_inQueueSockets.emplace_back(std::move(socket));
-	}
-
+	socket.send(boost::asio::buffer(&answer, answerMessage.size()));
+	m_inGameSockets.emplace_back(std::make_pair(Player{ true, controller }, std::move(socket)));
 }
 
 void GameServer::DenySocket(tcp::socket& socket)
@@ -129,11 +154,11 @@ void GameServer::Listen()
 
 			/*if (!Game::Get()->IsGameFull())
 			{*/
-				AcceptSocket(newSocket);
+			AcceptSocket(newSocket);
 			/*}
 			else
 			{
-				DenySocket(newSocket);
+			DenySocket(newSocket);
 			}*/
 
 		}
@@ -141,6 +166,12 @@ void GameServer::Listen()
 		{
 			std::cerr << ec.message() << std::endl;
 			newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+			newSocket.close();
+			Listen();
+		}
+		catch (...)
+		{
+			newSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 			newSocket.close();
 			Listen();
 		}

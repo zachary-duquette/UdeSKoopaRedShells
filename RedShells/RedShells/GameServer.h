@@ -11,6 +11,7 @@
 #include <string>
 #include <boost/foreach.hpp>
 #include <algorithm>
+#include <chrono>
 
 using boost::asio::ip::tcp;
 class CellphoneController;
@@ -18,9 +19,8 @@ class CellphoneController;
 class GameServer
 {
 public:
-	GameServer();
 	~GameServer();
-
+	static GameServer* Get();
 private:
 
 	struct Player
@@ -31,7 +31,9 @@ private:
 
 	std::thread m_socketListener;
 	std::thread m_newConnection;
+	static GameServer* m_singleton;
 
+	GameServer();
 	void Listen();
 	void Update();
 	//void NewConnection();
@@ -42,5 +44,4 @@ private:
 	boost::property_tree::ptree ReadJson(std::string json);
 
 	std::vector<std::pair<Player, tcp::socket>>m_inGameSockets;
-	std::vector<tcp::socket> m_inQueueSockets;
 };

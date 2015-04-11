@@ -102,6 +102,6 @@ int main()
 	
 	Viewport::Get()->Enable2D(Viewport::WIDTH, Viewport::HEIGHT);
 	glColor3f(1.0f, 1.0f, 1.0f);
-	GameServer server{};
+	GameServer *server = GameServer::Get();
 	glutMainLoop();
 }
