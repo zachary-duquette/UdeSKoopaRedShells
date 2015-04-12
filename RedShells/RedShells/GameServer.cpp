@@ -46,22 +46,6 @@ void GameServer::Update()
 					{
 						float value = std::stof(payload + 1);
 						m_inGameSockets[player].first.mi_playerController->UpdateValue(value);
-						//if (m_inGameSockets[socket].first.mi_playerController->GetStatus() == Dead)
-						//{
-						//	m_inGameSockets[player].first.mi_isAlive = false;
-						//	char answer[100];
-						//	std::string answerMessage{ "End", "Dead" };
-						//	std::copy(answerMessage.begin(), answerMessage.end(), answer);
-						//	m_inGameSockets[player].second.send(boost::asio::buffer(&answer, answerMessage.size()));
-						//}
-						//if (m_inGameSockets[socket].first.mi_playerController->GetStatus() == Winner)
-						//{
-						//		m_inGameSockets[player].first.mi_isAlive = false;
-						//		char answer[100];
-						//		std::string answerMessage{ "End", "Winner" };
-						//		std::copy(answerMessage.begin(), answerMessage.end(), answer);
-						//		m_inGameSockets[player].second.send(boost::asio::buffer(&answer, answerMessage.size()));
-						//}
 					}
 					else
 					{
@@ -90,21 +74,6 @@ void GameServer::Update()
 				m_inGameSockets[player].second.close();
 				continue;
 			}
-	/*		catch (const std::invalid_argument& ia)
-			{
-				std::cerr << "Invalid argument : " << ia.what() << std::endl;
-				continue;
-			}
-			catch (const std::out_of_range& oor) 
-			{
-				std::cerr << "Out of Range error : " << oor.what() << std::endl;
-				continue;
-			}
-			catch (std::exception& e)
-			{
-				std::cerr << "Exception : " << e.what() << std::endl;
-				continue;
-			}*/
 			catch (...)
 			{
 				m_inGameSockets[player].first.mi_isAlive = false;
@@ -152,14 +121,14 @@ void GameServer::Listen()
 		{
 			acceptor.accept(newSocket);
 
-			/*if (!Game::Get()->IsGameFull())
-			{*/
-			AcceptSocket(newSocket);
-			/*}
+			if (!Game::Get()->IsGameFull() && Game::Get()->CanPlayersJoin())
+			{
+				AcceptSocket(newSocket);
+			}
 			else
 			{
-			DenySocket(newSocket);
-			}*/
+				DenySocket(newSocket);
+			}
 
 		}
 		catch (boost::system::error_code ec)

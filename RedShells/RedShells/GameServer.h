@@ -36,7 +36,6 @@ private:
 	GameServer();
 	void Listen();
 	void Update();
-	//void NewConnection();
 	void AcceptSocket(tcp::socket& socket);
 	void DenySocket(tcp::socket& socket);
 

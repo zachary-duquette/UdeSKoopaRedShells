@@ -9,11 +9,11 @@ void KeyboardController::KeyPressed(unsigned char key)
 {
 	if (key == m_turnRight)
 	{
-		m_turnValue = 0.5;
+		m_turnValue = -0.5;
 	}
 	else if (key == m_turnLeft)
 	{
-		m_turnValue = -0.5;
+		m_turnValue = 0.5;
 	}
 }
 

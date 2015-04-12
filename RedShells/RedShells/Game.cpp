@@ -8,6 +8,7 @@ Game* Game::m_singleton = nullptr;
 const int Game::MINIMUM_VARIATION_DEGREE = 1;
 
 Game::Game()
+	:m_canPlayersJoin{ true }, m_gameState{}
 {
 
 }
@@ -34,7 +35,7 @@ GameState& Game::GetGameState()
 
 void Game::StartGame()
 {
-	m_canPlayersJoin = false;
+	SetPlayersCanJoin(false);
 	m_gameState.Reset();
 	for (auto playerIT = m_players.begin(); playerIT != m_players.end(); ++playerIT)
 	{
@@ -96,6 +97,11 @@ int Game::AddPlayer(IPlayerController* playerController)
 bool Game::CanPlayersJoin() const
 {
 	return m_canPlayersJoin;
+}
+
+void Game::SetPlayersCanJoin(bool canJoin)
+{
+	m_canPlayersJoin = canJoin;
 }
 
 int Game::GetNumberOfPlayers() const

@@ -10,7 +10,7 @@ private:
 	{
 		int mi_playerNumber;
 		bool mi_isAlive;
-		float mi_angle;
+		double mi_angle;
 		IPlayerController* mi_playerController;
 	};
 
@@ -46,6 +46,8 @@ public:
 	int AddPlayer(IPlayerController* playerController);
 
 	bool CanPlayersJoin() const;
+
+	void SetPlayersCanJoin(bool canJoin);
 
 	int GetNumberOfPlayers() const;
 };

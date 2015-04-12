@@ -46,8 +46,6 @@ private:
 	bool DoesIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) const;
 
 public:
-	GameState();
-	~GameState();
 
 	//Returns Player Number
 	int AddPlayer();

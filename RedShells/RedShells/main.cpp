@@ -38,6 +38,7 @@ void Tick(int value)
 	}
 	else
 	{
+		game->SetPlayersCanJoin(true);
 		glutTimerFunc(5000, WaitForPlayers, 0);
 	}
 }
@@ -59,7 +60,7 @@ void Keyboard(unsigned char key, int x, int y)
 	Game* game = Game::Get();
 	if (key == '1')
 	{
-		if (!game->IsGameFull())
+		if (!game->IsGameFull() && game->CanPlayersJoin())
 		{
 			game->AddPlayer(KeyboardControllerManager::Get()->GetController());
 		}

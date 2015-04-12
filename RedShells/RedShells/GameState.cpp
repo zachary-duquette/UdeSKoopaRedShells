@@ -6,18 +6,9 @@
 using namespace std;
 
 const double GameState::SPEED = 1;
-const int GameState::DISTANCE_FROM_OTHER_PLAYER = 5;
-const int GameState::DISTANCE_FROM_BORDER_START = 15;
+const int GameState::DISTANCE_FROM_OTHER_PLAYER = 10;
+const int GameState::DISTANCE_FROM_BORDER_START = 25;
 const int GameState::FIELD_SIZE = 250;
-
-GameState::GameState()
-{
-	
-}
-
-GameState::~GameState()
-{
-}
 
 //Private Methods -----
 GameState::Coordinate GameState::GetRandomStartCoordinate() const
@@ -69,6 +60,7 @@ bool GameState::IsOutOfBounds(Coordinate p) const
 
 bool GameState::DoesIntersect(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) const
 {
+	//Black magic from StackOverflow :D
 	double s1_x, s1_y, s2_x, s2_y;
 	s1_x = p2.mi_x - p1.mi_x;     s1_y = p2.mi_y - p1.mi_y;
 	s2_x = q2.mi_x - q1.mi_x;     s2_y = q2.mi_y - q1.mi_y;
@@ -96,6 +88,7 @@ int GameState::AddPlayer()
 	return m_players.size();
 }
 
+//Only used for debugging
 void GameState::Print() const
 {
 	for (unsigned int i = 0; i < m_players.size(); ++i)
@@ -112,7 +105,6 @@ bool GameState::MovePlayer(int playerNumber, double angle, bool angleChangedFrom
 {
 	//Calculate new coordinate
 	auto newCoordinate = CalculateNewCoordinate(m_players[playerNumber - 1].back(), angle);
-	//Check if collisions
 	if (IsOutOfBounds(newCoordinate))
 	{
 		return false;
